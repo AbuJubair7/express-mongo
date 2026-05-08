@@ -2,11 +2,13 @@ import { UserDTO } from "./dto/user.dto.js";
 import User from "./user.model.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
 
 interface UserResponse {
   success: boolean;
   message: string;
-  data?: any;
+  data?: UserDTO | UserDTO[];
+  token?: string;
 }
 
 interface PaginatedUserResponse extends UserResponse {
@@ -29,14 +31,51 @@ export default class UserService {
     });
     try {
       const savedUser = await user.save();
+      const token = this.createToken(userData);
       return {
         success: true,
         message: "User created successfully",
         data: savedUser,
+        token,
       };
     } catch (error) {
       throw new Error(
         `Error creating user: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  };
+
+  loginUser = async (user: Partial<UserDTO>): Promise<UserResponse> => {
+    try {
+      const existingUser = await User.findOne({ email: user.email });
+      if (!existingUser) {
+        return {
+          success: false,
+          message: "Invalid email or password",
+        };
+      }
+
+      const isPasswordValid = await bcrypt.compare(
+        user.password || "",
+        existingUser.password,
+      );
+      if (!isPasswordValid) {
+        return {
+          success: false,
+          message: "Invalid email or password",
+        };
+      }
+
+      const token = this.createToken(existingUser.toObject());
+      return {
+        success: true,
+        message: "Login successful",
+        data: existingUser,
+        token,
+      };
+    } catch (error) {
+      throw new Error(
+        `Error logging in user: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   };
@@ -62,7 +101,10 @@ export default class UserService {
     }
   };
 
-  updateUser = async (id: string, user: Partial<UserDTO>): Promise<UserResponse> => {
+  updateUser = async (
+    id: string,
+    user: Partial<UserDTO>,
+  ): Promise<UserResponse> => {
     if (user.password) {
       user.password = await bcrypt.hash(user.password, 10);
     }
@@ -107,7 +149,10 @@ export default class UserService {
     }
   };
 
-  getUsers = async (page: number = 1, limit: number = 10): Promise<PaginatedUserResponse> => {
+  getUsers = async (
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<PaginatedUserResponse> => {
     try {
       const skip = (page - 1) * limit;
       const users = await User.find().skip(skip).limit(limit);
@@ -130,5 +175,13 @@ export default class UserService {
         `Error retrieving users: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
+  };
+
+  // Generate JWT token
+  createToken = (user: UserDTO): string => {
+    const token = jwt.sign(user, process.env.JWT_SECRET || "fallback-secret", {
+      expiresIn: process.env.JWT_EXPIRES_IN as jwt.SignOptions["expiresIn"],
+    });
+    return token;
   };
 }

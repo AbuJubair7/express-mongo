@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import UserService from "./user.service.js";
+import { verifyToken } from "../../middleware/authMiddleware.js";
 
 export default class UserController {
   constructor(
@@ -9,7 +10,7 @@ export default class UserController {
 
   activateRoutes = (): void => {
     // get all users with pagination
-    this.app.get("/", async (req: Request, res: Response) => {
+    this.app.get("/", verifyToken, async (req: Request, res: Response) => {
       try {
         const page = Math.max(1, Number(req.query.page) || 1);
         const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
@@ -41,7 +42,7 @@ export default class UserController {
     });
 
     // get user by id
-    this.app.get("/:id", async (req: Request, res: Response) => {
+    this.app.get("/:id", verifyToken, async (req: Request, res: Response) => {
       try {
         const result = await this.userService.getUserById(
           req.params.id as string,
@@ -61,7 +62,7 @@ export default class UserController {
     });
 
     // update user
-    this.app.patch("/:id", async (req: Request, res: Response) => {
+    this.app.patch("/:id", verifyToken, async (req: Request, res: Response) => {
       try {
         const result = await this.userService.updateUser(
           req.params.id as string,
@@ -79,20 +80,24 @@ export default class UserController {
     });
 
     // delete user
-    this.app.delete("/:id", async (req: Request, res: Response) => {
-      try {
-        const result = await this.userService.deleteUser(
-          req.params.id as string,
-        );
-        res.json(result);
-      } catch (error) {
-        res.status(500).json({
-          success: false,
-          message: `Error deleting user: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        });
-      }
-    });
+    this.app.delete(
+      "/:id",
+      verifyToken,
+      async (req: Request, res: Response) => {
+        try {
+          const result = await this.userService.deleteUser(
+            req.params.id as string,
+          );
+          res.json(result);
+        } catch (error) {
+          res.status(500).json({
+            success: false,
+            message: `Error deleting user: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          });
+        }
+      },
+    );
   };
 }
