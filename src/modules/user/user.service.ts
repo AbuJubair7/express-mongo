@@ -11,6 +11,12 @@ interface UserResponse {
   token?: string;
 }
 
+interface PasswordUpdate {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 interface PaginatedUserResponse extends UserResponse {
   pagination?: {
     page: number;
@@ -124,6 +130,52 @@ export default class UserService {
     } catch (error) {
       throw new Error(
         `Error updating user: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  };
+
+  updatePassword = async (
+    id: string,
+    passwords: PasswordUpdate,
+  ): Promise<UserResponse> => {
+    try {
+      const user = await User.findById(id);
+      if (!user) {
+        return {
+          success: false,
+          message: "User not found",
+        };
+      }
+
+      const isOldPasswordValid = await bcrypt.compare(
+        passwords.oldPassword,
+        user.password,
+      );
+      if (!isOldPasswordValid) {
+        return {
+          success: false,
+          message: "Old password is incorrect",
+        };
+      }
+
+      if (passwords.newPassword !== passwords.confirmPassword) {
+        return {
+          success: false,
+          message: "New password and confirm password do not match",
+        };
+      }
+
+      user.password = await bcrypt.hash(passwords.newPassword, 10);
+      const updatedUser = await user.save();
+
+      return {
+        success: true,
+        message: "Password updated successfully",
+        data: updatedUser,
+      };
+    } catch (error) {
+      throw new Error(
+        `Error updating password: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   };

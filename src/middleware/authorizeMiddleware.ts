@@ -4,7 +4,7 @@ import { UserDTO } from "../modules/user/dto/user.dto.js";
 
 const isValid = async (req: Request, res: Response): Promise<boolean> => {
   try {
-    if (res.locals.user?.role === "admin") return true;
+    if (res.locals.user?.userType === "admin") return true;
 
     const id = req.params.id as string | undefined;
     if (!id) return false;
