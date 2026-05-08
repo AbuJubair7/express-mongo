@@ -1,22 +1,28 @@
+import { routes, controllers } from "./main.js";
 import express from "express";
-import mongoose from "mongoose";
 import "dotenv/config";
+import cors from "cors";
+import { connectDB } from "./config/db.js";
 
-const app = express();
+const server = express();
+const PORT = Number(process.env.PORT) || 3000;
+const HOST = process.env.HOST || "0.0.0.0";
 
-app.use(express.json());
+await connectDB();
 
-const uri = process.env.MONGO_URI as string;
+// middlewares
+server.use(cors());
+server.use(express.json());
+server.use(express.urlencoded({ extended: true }));
 
-mongoose
-  .connect(uri)
-  .then(() => {
-    console.log("Successfully connected to MongoDB!");
-  })
-  .catch((error) => {
-    console.log("Database connection failed:", error);
-  });
-
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+// activate routes
+Object.entries(routes).forEach(([path, router]) => {
+  server.use(path, router);
+});
+// activate controllers
+Object.values(controllers).forEach((controller) => {
+  controller.activateRoutes();
+});
+server.listen(PORT, HOST, () => {
+  console.log(`Server is running on http://${HOST}:${PORT}`);
 });
