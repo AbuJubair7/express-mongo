@@ -8,12 +8,13 @@
     "dev": "nodemon --exec node --loader ts-node/esm src/app.ts"
   },
   "dependencies": {
-    "express": "^5.1.0",
-    "mongoose": "^8.14.2"
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongoose": "^8.23.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
-    "@types/node": "^22.15.18",
+    "@types/node": "^22.19.18",
     "nodemon": "^3.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
