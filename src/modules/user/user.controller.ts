@@ -1,7 +1,6 @@
 import { Router, Request, Response } from "express";
 import UserService from "./user.service.js";
 import { verifyToken } from "../../middleware/authMiddleware.js";
-import { UserDTO } from "./dto/user.dto.js";
 import { authorized } from "../../middleware/authorizeMiddleware.js";
 
 export default class UserController {
@@ -67,7 +66,7 @@ export default class UserController {
     });
 
     // get user by id
-    this.app.get("/:id", verifyToken, async (req: Request, res: Response) => {
+    this.app.get("/:id", verifyToken, authorized, async (req: Request, res: Response) => {
       try {
         const result = await this.userService.getUserById(
           req.params.id as string,
@@ -109,6 +108,29 @@ export default class UserController {
       },
     );
 
+    // update user password
+    this.app.patch(
+      "/:id/password",
+      verifyToken,
+      authorized,
+      async (req: Request, res: Response) => {
+        try {
+          const result = await this.userService.updatePassword(
+            req.params.id as string,
+            req.body,
+          );
+          res.json(result);
+        } catch (error) {
+          res.status(500).json({
+            success: false,
+            message: `Error updating user password: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          });
+        }
+      },
+    );
+
     // delete user
     this.app.delete(
       "/:id",
@@ -116,18 +138,6 @@ export default class UserController {
       authorized,
       async (req: Request, res: Response) => {
         try {
-          if (res.locals.user.role !== "admin") {
-            const user = await this.userService.getUserById(
-              req.params.id as string,
-            );
-            const userData = user.data as UserDTO;
-            if (!user.success || userData.email !== res.locals.user.email) {
-              return res.status(403).json({
-                success: false,
-                message: "Access denied",
-              });
-            }
-          }
           const result = await this.userService.deleteUser(
             req.params.id as string,
           );

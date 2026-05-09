@@ -28,9 +28,7 @@ export const authorized = async (
   try {
     if (req.method === "DELETE" || req.method === "PATCH") {
       const isValidResult = await isValid(req, res);
-      if (isValidResult) {
-        return next();
-      } else {
+      if (!isValidResult) {
         return res.status(403).json({
           success: false,
           message: "Access denied",
