@@ -1,24 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import UserService from "../modules/user/user.service.js";
-import { UserDTO } from "../modules/user/dto/user.dto.js";
-
-const isValid = async (req: Request, res: Response): Promise<boolean> => {
-  try {
-    if (res.locals.user?.userType === "admin") return true;
-
-    const id = req.params.id as string | undefined;
-    if (!id) return false;
-
-    const userService = new UserService();
-    const result = await userService.getUserById(id);
-    if (!result.success || !result.data) return false;
-
-    const userData = result.data as UserDTO;
-    return userData.email === res.locals.user.email;
-  } catch {
-    return false;
-  }
-};
+import OrganizationMembers from "../modules/organization/models/orgMembers.model.js";
 
 export const authorized = async (
   req: Request,
@@ -26,15 +7,21 @@ export const authorized = async (
   next: NextFunction,
 ) => {
   try {
-    if (req.method === "DELETE" || req.method === "PATCH") {
-      const isValidResult = await isValid(req, res);
-      if (!isValidResult) {
-        return res.status(403).json({
-          success: false,
-          message: "Access denied",
-        });
-      }
+    const { userId} = res.locals.user;
+    const {orgId} = req.query;
+
+    if (!userId || !orgId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
+
+    const member = await OrganizationMembers.findOne({ orgId, userId });
+    if (!member) {
+      return res.status(403).json({ success: false, message: "Access denied" });
+    }
+    if (member.role !== "owner" && member.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Access denied" });
+    }
+    next();
   } catch (error) {
     return res.status(500).json({
       success: false,

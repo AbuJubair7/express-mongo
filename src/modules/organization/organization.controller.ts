@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { OrganizationService } from "./organization.service.js";
 import { verifyToken } from "../../middleware/authMiddleware.js";
-import UserService from "../user/user.service.js";
 
 export class OrganizationController {
   constructor(
