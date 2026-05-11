@@ -8,7 +8,7 @@ export const authorized = async (
 ) => {
   try {
     const { _id } = res.locals.user;
-    const { orgId } = req.query;
+    const orgId = req.params.orgId || req.query.orgId;
 
     if (!_id || !orgId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
