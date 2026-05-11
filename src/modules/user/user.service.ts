@@ -1,5 +1,5 @@
 import { UserDTO } from "./dto/user.dto.js";
-import User from "./user.model.js";
+import User from "./models/user.model.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 interface UserResponse {
   success: boolean;
   message: string;
-  data?: UserDTO | UserDTO[];
+  data?: any;
   token?: string;
 }
 
@@ -230,7 +230,7 @@ export default class UserService {
   };
 
   // Generate JWT token
-  createToken = (user: UserDTO): string => {
+  createToken = (user: any): string => {
     const token = jwt.sign(user, process.env.JWT_SECRET || "fallback-secret", {
       expiresIn: process.env.JWT_EXPIRES_IN as jwt.SignOptions["expiresIn"],
     });

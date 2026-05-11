@@ -11,14 +11,8 @@ export default class UserController {
 
   activateRoutes = (): void => {
     // get all users with pagination
-    this.app.get("/", verifyToken, async (req: Request, res: Response) => {
+    this.app.get("/", verifyToken, authorized, async (req: Request, res: Response) => {
       try {
-        // if (res.locals.user.role !== "admin") {
-        //   return res.status(403).json({
-        //     success: false,
-        //     message: "Access denied",
-        //   });
-        // }
         const page = Math.max(1, Number(req.query.page) || 1);
         const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
         const result = await this.userService.getUsers(page, limit);
@@ -48,6 +42,7 @@ export default class UserController {
       }
     });
 
+    // login user
     this.app.post("/login", async (req: Request, res: Response) => {
       try {
         const result = await this.userService.loginUser(req.body);

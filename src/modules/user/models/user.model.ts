@@ -7,8 +7,8 @@ export interface IUser extends Document<string> {
   email: string;
   phone: string;
   password: string;
-  userType: string;
   status: string;
+  lastLoggedInAt?: Date;
   created_at: Date;
   updated_at: Date;
 }
@@ -45,16 +45,14 @@ const UserSchema = new Schema<IUser>(
       type: String,
       required: true,
     },
-    userType: {
-      type: String,
-      required: true,
-      trim: true,
-    },
     status: {
       type: String,
       required: true,
       default: "active",
       trim: true,
+    },
+    lastLoggedInAt: {
+      type: Date,
     },
   },
   {
