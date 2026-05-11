@@ -6,12 +6,12 @@ import { canInvite } from "../../middleware/inviteMiddleware.js";
 export class InviteController {
   constructor(
     private readonly inviteService: InviteService,
-    private readonly app: Router
+    private readonly app: Router,
   ) {}
 
   activateRoutes() {
     this.app.post(
-      "/invite",
+      "/",
       verifyToken,
       canInvite,
       async (req: Request, res: Response) => {
