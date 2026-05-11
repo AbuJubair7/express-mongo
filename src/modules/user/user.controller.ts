@@ -11,21 +11,29 @@ export default class UserController {
 
   activateRoutes = (): void => {
     // get all users with pagination
-    this.app.get("/", verifyToken, authorized, async (req: Request, res: Response) => {
-      try {
-        const page = Math.max(1, Number(req.query.page) || 1);
-        const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
-        const result = await this.userService.getUsers(page, limit);
-        res.json(result);
-      } catch (error) {
-        res.status(500).json({
-          success: false,
-          message: `Error retrieving users: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        });
-      }
-    });
+    this.app.get(
+      "/",
+      verifyToken,
+      authorized,
+      async (req: Request, res: Response) => {
+        try {
+          const page = Math.max(1, Number(req.query.page) || 1);
+          const limit = Math.min(
+            100,
+            Math.max(1, Number(req.query.limit) || 10),
+          );
+          const result = await this.userService.getUsers(page, limit);
+          res.json(result);
+        } catch (error) {
+          res.status(500).json({
+            success: false,
+            message: `Error retrieving users: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          });
+        }
+      },
+    );
 
     // create user
     this.app.post("/", async (req: Request, res: Response) => {
@@ -61,7 +69,7 @@ export default class UserController {
     });
 
     // get user by id
-    this.app.get("/:id", verifyToken, authorized, async (req: Request, res: Response) => {
+    this.app.get("/:id", verifyToken, async (req: Request, res: Response) => {
       try {
         const result = await this.userService.getUserById(
           req.params.id as string,
@@ -81,33 +89,27 @@ export default class UserController {
     });
 
     // update user
-    this.app.patch(
-      "/:id",
-      verifyToken,
-      authorized,
-      async (req: Request, res: Response) => {
-        try {
-          const result = await this.userService.updateUser(
-            req.params.id as string,
-            req.body,
-          );
-          res.json(result);
-        } catch (error) {
-          res.status(500).json({
-            success: false,
-            message: `Error updating user: ${
-              error instanceof Error ? error.message : String(error)
-            }`,
-          });
-        }
-      },
-    );
+    this.app.patch("/:id", verifyToken, async (req: Request, res: Response) => {
+      try {
+        const result = await this.userService.updateUser(
+          req.params.id as string,
+          req.body,
+        );
+        res.json(result);
+      } catch (error) {
+        res.status(500).json({
+          success: false,
+          message: `Error updating user: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        });
+      }
+    });
 
     // update user password
     this.app.patch(
       "/:id/password",
       verifyToken,
-      authorized,
       async (req: Request, res: Response) => {
         try {
           const result = await this.userService.updatePassword(
@@ -130,7 +132,6 @@ export default class UserController {
     this.app.delete(
       "/:id",
       verifyToken,
-      authorized,
       async (req: Request, res: Response) => {
         try {
           const result = await this.userService.deleteUser(

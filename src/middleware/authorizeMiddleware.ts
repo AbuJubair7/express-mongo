@@ -7,14 +7,15 @@ export const authorized = async (
   next: NextFunction,
 ) => {
   try {
-    const { userId} = res.locals.user;
-    const {orgId} = req.query;
+    const { _id } = res.locals.user;
+    const { orgId } = req.query;
 
-    if (!userId || !orgId) {
+    if (!_id || !orgId) {
+      console.log("Authorization error: Missing userId or orgId", _id, orgId);
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    const member = await OrganizationMembers.findOne({ orgId, userId });
+    const member = await OrganizationMembers.findOne({ orgId, userId: _id });
     if (!member) {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
@@ -30,6 +31,4 @@ export const authorized = async (
       }`,
     });
   }
-
-  next();
 };
