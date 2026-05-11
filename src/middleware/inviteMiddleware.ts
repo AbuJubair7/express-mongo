@@ -21,7 +21,6 @@ export const canInvite = async (
       userId: _id as string,
       role: { $in: ["owner", "admin"] },
     });
-    console.log(isOwnerOrAdmin);
     if (!isOwnerOrAdmin) {
       return res.status(403).json({ success: false, message: "Forbidden" });
     }

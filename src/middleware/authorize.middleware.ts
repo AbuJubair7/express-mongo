@@ -11,7 +11,6 @@ export const authorized = async (
     const { orgId } = req.query;
 
     if (!_id || !orgId) {
-      console.log("Authorization error: Missing userId or orgId", _id, orgId);
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 

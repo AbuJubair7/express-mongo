@@ -1,8 +1,8 @@
 import { Router, Request, Response } from "express";
 import { InviteService } from "./invite.service.js";
-import { verifyToken } from "../../middleware/authMiddleware.js";
+import { verifyToken } from "../../middleware/auth.middleware.js";
 import { canInvite } from "../../middleware/inviteMiddleware.js";
-import canUpdateInvite from "../../middleware/canUpdateInviteMiddleware.js";
+import canUpdateInvite from "../../middleware/canUpdateInvite.middleware.js";
 
 export class InviteController {
   constructor(
@@ -33,27 +33,22 @@ export class InviteController {
     );
 
     // get invite by id
-    this.app.get(
-      "/",
-      verifyToken,
-      async (req: Request, res: Response) => {
-        try {
-          console.log("Getting invite for user");
-          const { _id } = res.locals.user;
-          const invite = await this.inviteService.getInviteById(_id as string);
-          if (!invite) {
-            return res
-              .status(404)
-              .json({ success: false, message: "Invite not found" });
-          }
-          res.json({ success: true, data: invite });
-        } catch (error) {
-          res
-            .status(500)
-            .json({ success: false, message: "Internal server error" });
+    this.app.get("/", verifyToken, async (req: Request, res: Response) => {
+      try {
+        const { _id } = res.locals.user;
+        const invite = await this.inviteService.getInviteById(_id as string);
+        if (!invite) {
+          return res
+            .status(404)
+            .json({ success: false, message: "Invite not found" });
         }
-      },
-    );
+        res.json({ success: true, data: invite });
+      } catch (error) {
+        res
+          .status(500)
+          .json({ success: false, message: "Internal server error" });
+      }
+    });
 
     // update invite status
     this.app.patch(

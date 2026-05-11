@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import UserService from "./user.service.js";
-import { verifyToken } from "../../middleware/authMiddleware.js";
-import { authorized } from "../../middleware/authorizeMiddleware.js";
+import { verifyToken } from "../../middleware/auth.middleware.js";
+import { authorized } from "../../middleware/authorize.middleware.js";
 
 export default class UserController {
   constructor(

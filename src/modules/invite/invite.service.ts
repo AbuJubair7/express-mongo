@@ -1,3 +1,5 @@
+import Organization from "../organization/models/organization.model.js";
+import OrganizationMembers from "../organization/models/orgMembers.model.js";
 import Invite, { IInvite } from "./models/invite.model.js";
 import crypto from "crypto";
 
@@ -60,6 +62,16 @@ export class InviteService {
       }
       invite.status = status as string;
       const updatedInvite = await invite.save();
+      const addMember = await OrganizationMembers.create({
+      _id: crypto.randomUUID(),
+      orgId: invite.orgId,
+      userId: invite.userId,
+      role: "member",
+      status: "active",
+      invitedAt: invite.created_at,
+      joinedAt: new Date(),
+    });
+    await addMember.save();
       return sendResponse(
         true,
         "Invite status updated successfully",

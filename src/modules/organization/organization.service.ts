@@ -2,18 +2,18 @@ import Organization, { IOrganization } from "./models/organization.model.js";
 import { OrganizationDTO } from "./dto/organization.dto.js";
 import crypto from "crypto";
 import { IUser } from "../user/models/user.model.js";
-import { OrganizationMembers } from "./models/orgMembers.model.js";
+import { IOrganizationMembers, OrganizationMembers } from "./models/orgMembers.model.js";
 
 interface OrganizationResponse {
   success: boolean;
   message: string;
-  data?: IOrganization | IOrganization[];
+  data?: IOrganization | IOrganization[] | IOrganizationMembers[] | IOrganizationMembers;
 }
 
 const sendResponse = (
   success: boolean,
   message: string,
-  data?: IOrganization | IOrganization[],
+  data?: IOrganization | IOrganization[] | IOrganizationMembers[] | IOrganizationMembers,
 ): OrganizationResponse => {
   return {
     success,
@@ -25,7 +25,7 @@ const sendResponse = (
 export class OrganizationService {
   constructor() {}
 
-  // Placeholder for organization-related methods
+  // create organization
   createOrganization = async (
     orgData: OrganizationDTO,
     userData: IUser,
@@ -54,6 +54,7 @@ export class OrganizationService {
     }
   };
 
+  // get all organizations
   getAllOrganizations = async (): Promise<OrganizationResponse> => {
     try {
       const organizations = await Organization.find();
@@ -64,6 +65,29 @@ export class OrganizationService {
       );
     } catch (error) {
       throw new Error("Failed to fetch organizations");
+    }
+  };
+
+  // get organization by id
+  getOrganizationById = async (orgId: string): Promise<OrganizationResponse> => {
+    try {
+      const organization = await Organization.findById(orgId);
+      if (!organization) {
+        return sendResponse(false, "Organization not found");
+      }
+      return sendResponse(true, "Organization fetched successfully", organization);
+    } catch (error) {
+      throw new Error("Failed to fetch organization");
+    }
+  };
+
+  // get members from organization id
+  getOrganizationMembers = async (orgId: string): Promise<OrganizationResponse> => {
+    try {
+      const members = await OrganizationMembers.find({ orgId });
+      return sendResponse(true, "Members fetched successfully", members);
+    } catch (error) {
+      throw new Error("Failed to fetch members");
     }
   };
 }

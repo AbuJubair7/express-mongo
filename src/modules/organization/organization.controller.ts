@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { OrganizationService } from "./organization.service.js";
-import { verifyToken } from "../../middleware/authMiddleware.js";
+import { verifyToken } from "../../middleware/auth.middleware.js";
 
 export class OrganizationController {
   constructor(
@@ -17,7 +17,6 @@ export class OrganizationController {
           req.body,
           res.locals.user,
         );
-        console.log("Organization creation result:", result);
         res.json(result);
       } catch (error) {
         res
@@ -30,6 +29,38 @@ export class OrganizationController {
     this.app.get("/", verifyToken, async (req, res) => {
       try {
         const result = await this.organizationService.getAllOrganizations();
+        res.json(result);
+      } catch (error) {
+        res
+          .status(500)
+          .json({ success: false, message: "Internal server error" });
+      }
+    });
+
+    // get org by id
+    this.app.get("/:orgId", verifyToken, async (req, res) => {
+      try {
+        const { orgId } = req.params;
+        const result = await this.organizationService.getOrganizationById(orgId as string);
+        if (!result.success) {
+          return res.status(404).json(result);
+        }
+        res.json(result);
+      } catch (error) {
+        res
+          .status(500)
+          .json({ success: false, message: "Internal server error" });
+      }
+    });
+
+    // get members of org
+    this.app.get("/:orgId/members", verifyToken, async (req, res) => {
+      try {
+        const { orgId } = req.params;
+        const result = await this.organizationService.getOrganizationMembers(orgId as string);
+        if (!result.success) {
+          return res.status(404).json(result);
+        }
         res.json(result);
       } catch (error) {
         res
