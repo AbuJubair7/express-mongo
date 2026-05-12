@@ -3,6 +3,7 @@ import { OrganizationDTO } from "./dto/organization.dto.js";
 import crypto from "crypto";
 import { IUser } from "../user/models/user.model.js";
 import { IOrganizationMembers, OrganizationMembers } from "./models/orgMembers.model.js";
+import { ORGANIZATION_MEMBER_ROLES } from "./dto/orgMember.dto.js";
 
 interface OrganizationResponse {
   success: boolean;
@@ -88,6 +89,48 @@ export class OrganizationService {
       return sendResponse(true, "Members fetched successfully", members);
     } catch (error) {
       throw new Error("Failed to fetch members");
+    }
+  };
+
+   // remove a member from an organization
+  removeMember = async (
+    orgId: string,
+    memberId: string,
+  ): Promise<OrganizationResponse> => {
+    try {
+      const member = await OrganizationMembers.findOne({ _id: memberId, orgId });
+      if (!member) {
+        return sendResponse(false, "Member not found");
+      }
+      await OrganizationMembers.deleteOne({ _id: memberId, orgId });
+      return sendResponse(true, "Member removed successfully", member);
+    } catch (error) {
+      throw new Error("Failed to remove member");
+    }
+  };
+
+  // update a member's role
+  updateMemberRole = async (
+    orgId: string,
+    memberId: string,
+    role: string,
+  ): Promise<OrganizationResponse> => {
+    try {
+      if (!ORGANIZATION_MEMBER_ROLES.includes(role as (typeof ORGANIZATION_MEMBER_ROLES)[number])) {
+        return sendResponse(
+          false,
+          `Invalid role. Allowed: ${ORGANIZATION_MEMBER_ROLES.join(", ")}`,
+        );
+      }
+      const member = await OrganizationMembers.findOne({ _id: memberId, orgId });
+      if (!member) {
+        return sendResponse(false, "Member not found");
+      }
+      member.role = role;
+      const updated = await member.save();
+      return sendResponse(true, "Member role updated successfully", updated);
+    } catch (error) {
+      throw new Error("Failed to update member role");
     }
   };
 }
